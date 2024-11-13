@@ -2,28 +2,39 @@ import os
 import mysql.connector
 import configparser
 
+# Load database configuration
 config_file_path= os.path.join(os.path.dirname(__file__), '.db_config.config')
-
 config = configparser.ConfigParser()
 config.read(config_file_path)
 
+# Database connection parameters
 db_config = {
     'user': config['conn_info']['user'],
     'password': config['conn_info']['password'],
     'host': config['conn_info']['host'],
-    'database': config['conn_info']['database'],
     'allow_local_infile': config.getboolean('conn_info', 'allow_local_infile')
 }
 
 base_folder_path = 'assets/data'
 folders = ['import_data', 'export_data']
 
+# Connection to the target MySQL server
 mydb = mysql.connector.connect(**db_config)
 cursor = mydb.cursor()
 
+cursor.execute("SET GLOBAL local_infile = 1;")
+
+database_name = config['conn_info']['database']
+create_db_query = f"CREATE DATABASE IF NOT EXISTS {database_name};"
+cursor.execute(create_db_query)
+
+mydb.database = database_name
+
+# Loop through each folder (import_data and export_data)
 for folder in folders:
     folder_path = os.path.join(base_folder_path, folder)
 
+    # Loop through all files in the folder
     for filename in os.listdir(folder_path):
         if filename.endswith('.csv'):
             table_name = filename.replace('.csv', '')
@@ -48,7 +59,13 @@ for folder in folders:
             FIELDS TERMINATED BY ',' 
             LINES TERMINATED BY '\n' 
             IGNORE 1 ROWS
-            (Commodity, Unit, Country, Quantity, Value);
+            (Commodity, Unit, Country, Quantity, Value)
+            SET
+                Commodity = IF(Commodity = '', '', Commodity),
+                Unit = IF(Unit = '', 'KGS', Unit),
+                Country = IF(Country = '', '', Country),
+                Quantity = IF(Quantity = '', 0, Quantity),
+                Value = IF(Value = '', 0.00, Value);
             """
             try:
                 cursor.execute(load_data_query)
@@ -56,8 +73,10 @@ for folder in folders:
             except mysql.connector.Error as e:
                 print(f"Error loading data from {filename}: {e}")
 
+#Commit changes and clean up connections
 mydb.commit()
 cursor.close()
 mydb.close()
 
+#Print the completion messsage
 print("CSV files imported successfully.")
