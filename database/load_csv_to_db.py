@@ -3,20 +3,20 @@ import mysql.connector
 import configparser
 
 # Load database configuration
-config_file_path= os.path.join(os.path.dirname(__file__), '.db_config.config')
+config_file_path = os.path.join(os.path.dirname(__file__), ".db_config.config")
 config = configparser.ConfigParser()
 config.read(config_file_path)
 
 # Database connection parameters
 db_config = {
-    'user': config['conn_info']['user'],
-    'password': config['conn_info']['password'],
-    'host': config['conn_info']['host'],
-    'allow_local_infile': config.getboolean('conn_info', 'allow_local_infile')
+    "user": config["conn_info"]["user"],
+    "password": config["conn_info"]["password"],
+    "host": config["conn_info"]["host"],
+    "allow_local_infile": config.getboolean("conn_info", "allow_local_infile"),
 }
 
-base_folder_path = 'assets/data'
-folders = ['import_data', 'export_data']
+base_folder_path = "assets/data"
+folders = ["import_data", "export_data"]
 
 # Connection to the target MySQL server
 mydb = mysql.connector.connect(**db_config)
@@ -24,7 +24,7 @@ cursor = mydb.cursor()
 
 cursor.execute("SET GLOBAL local_infile = 1;")
 
-database_name = config['conn_info']['database']
+database_name = config["conn_info"]["database"]
 create_db_query = f"CREATE DATABASE IF NOT EXISTS {database_name};"
 cursor.execute(create_db_query)
 
@@ -36,8 +36,8 @@ for folder in folders:
 
     # Loop through all files in the folder
     for filename in os.listdir(folder_path):
-        if filename.endswith('.csv'):
-            table_name = filename.replace('.csv', '')
+        if filename.endswith(".csv"):
+            table_name = filename.replace(".csv", "")
 
             create_table_query = f"""
             CREATE TABLE IF NOT EXISTS {table_name} (
@@ -73,10 +73,10 @@ for folder in folders:
             except mysql.connector.Error as e:
                 print(f"Error loading data from {filename}: {e}")
 
-#Commit changes and clean up connections
+# Commit changes and clean up connections
 mydb.commit()
 cursor.close()
 mydb.close()
 
-#Print the completion messsage
+# Print the completion messsage
 print("CSV files imported successfully.")
