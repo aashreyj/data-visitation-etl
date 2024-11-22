@@ -16,6 +16,9 @@ const dbConfig = {
     password: process.env.DATABASE_CONNECTION_PASSWORD
 }
 
+const continentsCTE = "WITH Continents AS (SELECT 'Africa' AS Continent UNION ALL SELECT 'Asia' UNION ALL SELECT 'Europe' UNION ALL SELECT 'North America' UNION ALL SELECT 'Oceania' UNION ALL SELECT 'South America') "
+const yearsCTE = "WITH Years AS (SELECT '2014_15' AS Year UNION ALL SELECT '2015_16' UNION ALL SELECT '2016_17' UNION ALL SELECT '2017_18' UNION ALL SELECT '2018_19' UNION ALL SELECT '2019_20' UNION ALL SELECT '2021_22' UNION ALL SELECT '2022_23') "
+
 // FUNCTION TO CONVERT A WORD TO TITLE CASE
 function toTitleCase(word) {
     if (!word) return '';
@@ -89,9 +92,12 @@ router.get('/:category/:ieType/:ygType', async (req, res) => {
     const data = {};
     data.commodity_data = [];
     if (yearOrGeography === "Year")
-        data.labels = [...years].sort()
+        data.labels = [...years].sort();
     else
-        data.labels = [...geographies].sort()
+        data.labels = [...geographies]
+            .map(geo => geo.split(' ').map(word => toTitleCase(word)).join(' '))
+            .sort();
+
 
     for (const commodity of commodities) {
         const dataset = {};
@@ -102,16 +108,18 @@ router.get('/:category/:ieType/:ygType', async (req, res) => {
         const yearsString = JSON.stringify(years).replace('[', '(').replace(']', ')');
         const geographiesString = JSON.stringify(geographies).replace('[', '(').replace(']', ')');
 
-        let query = "SELECT SUM(Value) as VAL, SUM(Quantity) as QUAN FROM " + importOrExport + "_data_" + commodity.toLowerCase() + " WHERE Year IN " + yearsString;
+        let query = "";
 
-        // TODO: Remove #109 and uncomment #108 once Continent column is added to the database
-        // query += " AND Continent IN " + geographiesString + " GROUP BY ";
-        query += " GROUP BY ";
-
-        if (yearOrGeography === "Year")
-            query += "Year ORDER BY Year";
-        else
-            query += "Continent ORDER BY Continent";
+        if (yearOrGeography === "Year") {
+            query += yearsCTE + "SELECT y.Year, COALESCE(SUM(d.Value), 0) AS VAL, COALESCE(SUM(d.Quantity), 0) AS QUAN FROM Years as y LEFT JOIN ";
+            query += importOrExport + "_data_" + commodity.toLowerCase() + " d ON y.Year = d.Year AND d.Year IN " + yearsString + " AND d.Continent IN " + geographiesString + " GROUP BY ";
+            query += "y.Year ORDER BY y.Year";
+        }
+        else {
+            query += continentsCTE + "SELECT c.Continent, COALESCE(SUM(d.Value), 0) AS VAL, COALESCE(SUM(d.Quantity), 0) AS QUAN FROM Continents as c LEFT JOIN ";
+            query += importOrExport + "_data_" + commodity.toLowerCase() + " d ON c.Continent = d.Continent AND d.Year IN " + yearsString + " AND d.Continent IN " + geographiesString + " GROUP BY ";
+            query += "c.Continent ORDER BY c.Continent";
+        }
 
         // RUN THE SQL QUERY ASYNCHRONOUSLY AND WAIT FOR RESPONSE
         await new Promise((resolve) => {
@@ -125,8 +133,10 @@ router.get('/:category/:ieType/:ygType', async (req, res) => {
 
                 // COLLECT DATA IN THE OBJECT
                 queryResult.forEach(row => {
-                    dataset.quantity.push(row.QUAN);
-                    dataset.value.push(row.VAL);
+                    if (data.labels.includes(row.Year) || data.labels.includes(row.Continent)) {
+                        dataset.quantity.push(row.QUAN);
+                        dataset.value.push(row.VAL);
+                    }
                 });
                 resolve();
             });
