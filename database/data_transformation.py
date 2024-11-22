@@ -45,6 +45,20 @@ conn_target = mysql.connector.connect(
 # Cursor for the target connection
 cursor_target = conn_target.cursor()
 
+# Load country to continent mapping
+country_continent_file = os.path.join(
+    "assets/data", "region_data", "country_continent_mapping.csv"
+)
+country_continent_mapping = pd.read_csv(country_continent_file)
+
+# Mapping country names to continents, ensuring case-insensitivity
+country_to_continent = dict(
+    zip(
+        country_continent_mapping["Country"].str.lower(),
+        country_continent_mapping["Continent"],
+    )
+)
+
 
 # Function to create databases for each supercommodity
 def create_database(supercommodity):
@@ -58,7 +72,7 @@ for supercommodity in commodities_map.keys():
     create_database(supercommodity)
 
 
-# Function to clear tables once at the start of the script execution
+# Function to clear tables at the start of the script execution
 def create_tables():
     for supercommodity, commodities in commodities_map.items():
         for data_type in ["import_data", "export_data"]:
@@ -73,7 +87,7 @@ def create_tables():
 
                 create_table_query = f"""
                 CREATE TABLE IF NOT EXISTS {table_name} (
-                    Unit VARCHAR(50),
+                    Continent VARCHAR(100),
                     Country VARCHAR(100),
                     Quantity DECIMAL(18, 2),
                     Value DECIMAL(18, 2),
@@ -102,7 +116,6 @@ def process_data(data_type):
                 cursor_target.execute(f"USE {db_name};")
 
                 table_name = f"{data_type}_{commodity.lower().replace(' ', '_')}"
-
                 select_query = f"""
                 SELECT Unit, Country, Quantity, Value 
                 FROM {source_db}.{table} 
@@ -114,19 +127,51 @@ def process_data(data_type):
                 if not data.empty:
                     data["Year"] = year_range
 
-                    for _, row in data.iterrows():
-                        quantity = row["Quantity"]
-                        value = row["Value"]
+                    data["Country"] = data["Country"].str.strip().str.title()
 
+                    data["Continent"] = data["Country"].apply(
+                        lambda x: country_to_continent.get(x.lower(), None)
+                    )
+
+                    data = data.dropna(subset=["Continent"])
+
+                    # If the DataFrame is empty after dropping NaNs, skip further processing
+                    if data.empty:
+                        continue
+
+                    data["Quantity"] = pd.to_numeric(data["Quantity"], errors="coerce")
+
+                    data["Quantity"] = data["Quantity"].round(2)
+
+                    unit = data.iloc[0]["Unit"]
+                    scale_factor = 1
+                    if unit.lower() == "kgs":
+                        scale_factor = 0.001
+                    elif unit.lower() == "gm":
+                        scale_factor = 0.000001
+
+                    data["Quantity"] = data["Quantity"] * scale_factor
+                    data = data.drop(columns=["Unit"])
+
+                    for _, row in data.iterrows():
                         insert_query = f"""
-                        INSERT INTO {table_name} (Unit, Country, Quantity, Value, Year) 
+                        INSERT INTO {table_name} (Continent, Country, Quantity, Value, Year) 
                         VALUES (%s, %s, %s, %s, %s);
                         """
 
-                        cursor_target.execute(
-                            insert_query,
-                            (row["Unit"], row["Country"], quantity, value, row["Year"]),
-                        )
+                        try:
+                            cursor_target.execute(
+                                insert_query,
+                                (
+                                    row["Continent"],
+                                    row["Country"],
+                                    row["Quantity"],
+                                    row["Value"],
+                                    row["Year"],
+                                ),
+                            )
+                        except mysql.connector.Error as e:
+                            print(f"Error inserting data: {e}")
 
         print(
             f"Completed processing {data_type} for year range: {year_range} across all commodities in {supercommodity}"
