@@ -1,6 +1,6 @@
 export const allCategories = ["agriculture"];
 export const allCommodities = ["Cashew", "Coffee", "Groundnut", "Pulses", "Sugar", "Spices", "Tea", "Wheat"]
-export const allGeographies = ["North America", "South America", "Europe", "Africa", "Asia", "Australia"]
+export const allGeographies = ["Africa", "Asia", "Europe", "North America", "Oceania", "South America"]
 export const allYears = ["2014_15", "2015_16", "2016_17", "2017_18", "2018_19", "2019_20", "2021_22", "2022_23"];
 export const HTTP_STATUS_OK = 200;
 export const HTTP_STATUS_CREATED = 201;
