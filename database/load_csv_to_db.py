@@ -57,6 +57,7 @@ for folder in folders:
             LOAD DATA LOCAL INFILE '{os.path.join(folder_path, filename)}'
             INTO TABLE {table_name}
             FIELDS TERMINATED BY ',' 
+            ENCLOSED BY '"'
             LINES TERMINATED BY '\n' 
             IGNORE 1 ROWS
             (Commodity, Unit, Country, Quantity, Value)
