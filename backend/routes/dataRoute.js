@@ -53,25 +53,28 @@ router.get('/:category/:ieType/:ygType', async (req, res) => {
     let yearOrGeography = req.params.ygType.toLowerCase();
 
     // VALIDATIONS
-    if (!allCategories.includes(category))
+    if (!allCategories.includes(category)) {
+        console.error("Invalid category selected");
         return res
             .status(HTTP_STATUS_BAD_REQUEST)
             .json({ message: "Invalid category selected", status: HTTP_STATUS_BAD_REQUEST, data: {} });
-
-    if (importOrExport != "import" && importOrExport != "export")
+    }
+    if (importOrExport != "import" && importOrExport != "export") {
+        console.error(`Invalid data type: ${importOrExport}`);
         return res
             .status(HTTP_STATUS_BAD_REQUEST)
             .json({ message: "Invalid data type", status: HTTP_STATUS_BAD_REQUEST, data: {} });
-
+    }
     if (yearOrGeography === "year")
         yearOrGeography = "Year";
     else if (yearOrGeography === "geography")
         yearOrGeography = "Geography";
-    else
+    else {
+        console.error("Invalid path param for year/geography");
         return res
             .status(HTTP_STATUS_BAD_REQUEST)
             .json({ message: "Invalid path param for year/geography", status: HTTP_STATUS_BAD_REQUEST, data: {} });
-
+    }
 
     // CREATE CONNECTION TO DATABASE
     dbConfig.database = importOrExport + "_data_" + category;

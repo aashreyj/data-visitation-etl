@@ -1,4 +1,5 @@
 import bodyParser from 'body-parser';
+import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 import passport from 'passport';
@@ -12,6 +13,11 @@ const app = express();
 dotenv.config({ path: './conf.env' });
 const port = process.env.APPLICATION_PORT || 5000;
 const sessionSecret = process.env.SECRET;
+const corsOptions = {
+    origin: "*",
+    credentials: true,
+    optinoSuccessState: 200,
+}
 
 function isAuthenticated(req, res, next) {
     const unauthRoutes = ["/user/register", "/user/login"]
@@ -21,6 +27,7 @@ function isAuthenticated(req, res, next) {
 }
 
 // MIDDLEWARE
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(session({
     secret: sessionSecret,
