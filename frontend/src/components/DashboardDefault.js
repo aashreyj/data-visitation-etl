@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate, useResolvedPath } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ErrorBoundary from './ErrorBoundary';
 import ChartComponent from './ChartComponent'; // Reusable chart component
 import '../styles/components.css'; // Ensure the path is correct for additional styling

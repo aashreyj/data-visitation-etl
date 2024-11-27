@@ -13,6 +13,16 @@ const DataFilter = () => {
   });
   const [selectedCommodities, setSelectedCommodities] = useState([]);
   const [error, setError] = useState('');
+  const yearMapping = {
+    "2014": "2014_15",
+    "2015": "2015_16",
+    "2016": "2016_17",
+    "2017": "2017_18",
+    "2018": "2018_19",
+    "2019": "2019_20",
+    "2021": "2021_22",
+    "2022": "2022_23",
+  };
 
   const handleFilterChange = (key, value, isCheckbox = false) => {
     setSelectedFilters((prev) => {
@@ -46,6 +56,11 @@ const DataFilter = () => {
   };
 
   const handleSubmit = () => {
+    if (!selectedFilters.years.length || !selectedCommodities.length) {
+      alert("Please select filters");
+      return;
+    }
+
     const validationError = validateSelections();
     if (validationError) {
       setError(validationError);
@@ -65,15 +80,16 @@ const DataFilter = () => {
 
           {/* Years Filter */}
           <div className="filter-group">
-            <h4>Select Years</h4>
+            <h4>Select Time Periods</h4>
             <div className="checkbox-container">
-              {['2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', 'All Years'].map((year) => (
+              {['2014', '2015', '2016', '2017', '2018', '2019', '2021', '2022', 'All Years'].map((year) => (
                 <label key={year}>
                   <input
                     type="checkbox"
-                    value={year}
+                    value={yearMapping[year]}
                     onChange={(e) => handleFilterChange('years', e.target.value, true)}
-                    checked={selectedFilters.years.includes(year)}
+                    checked={selectedFilters.years.includes(yearMapping[year])}
+                    style={{ marginLeft: "20px", marginRight: "5px" }}
                   />
                   {year}
                 </label>
@@ -86,17 +102,21 @@ const DataFilter = () => {
             <h4>Additional Filters</h4>
             <label>
               <input
-                type="checkbox"
+                name="value-quantity-radio"
+                type="radio"
                 checked={selectedFilters.quantity}
                 onChange={() => handleFilterChange('quantity')}
+                style={{ marginLeft: "20px", marginRight: "5px" }}
               />
               Quantity
             </label>
             <label>
               <input
-                type="checkbox"
+                name="value-quantity-radio"
+                type="radio"
                 checked={selectedFilters.value}
                 onChange={() => handleFilterChange('value')}
+                style={{ marginLeft: "20px", marginRight: "5px" }}
               />
               Value
             </label>
@@ -106,7 +126,7 @@ const DataFilter = () => {
           <div className="filter-group">
             <h4>Select Regions</h4>
             <div className="checkbox-container">
-              {['Asia', 'Europe', 'North America', 'South America', 'Africa', 'Australia', 'Antarctica', 'All Regions'].map(
+              {['Africa', 'Asia', 'Europe', 'Oceania', 'North America', 'South America', 'All Regions'].map(
                 (region) => (
                   <label key={region}>
                     <input
@@ -114,6 +134,7 @@ const DataFilter = () => {
                       value={region}
                       onChange={(e) => handleFilterChange('regions', e.target.value, true)}
                       checked={selectedFilters.regions.includes(region)}
+                      style={{ marginLeft: "20px", marginRight: "5px" }}
                     />
                     {region}
                   </label>
@@ -127,13 +148,14 @@ const DataFilter = () => {
         <div className="commodity-selection">
           <h3>Select Commodities</h3>
           <div className="checkbox-container">
-            {['Commodity 1', 'Commodity 2', 'Commodity 3', 'Commodity 4', 'Commodity 5', 'Commodity 6', 'Commodity 7', 'Commodity 8', 'Commodity 9', 'Commodity 10'].map((commodity) => (
+            {['Cashew', 'Coffee', 'Groundnut', 'Pulses', 'Sugar', 'Spices', 'Tea', 'Wheat'].map((commodity) => (
               <label key={commodity}>
                 <input
                   type="checkbox"
                   value={commodity}
                   onChange={(e) => handleCommodityChange(e.target.value)}
                   checked={selectedCommodities.includes(commodity)}
+                  style={{ marginLeft: "20px", marginRight: "5px" }}
                 />
                 {commodity}
               </label>
@@ -143,10 +165,10 @@ const DataFilter = () => {
       </div>
 
       {/* Error Message */}
-      {error && <div className="error-message">{error}</div>}
+      {error && <div className="error-message" style={{ padding: "20px" }}>{error}</div>}
 
       {/* Submit Button */}
-      <button className="submit-button" onClick={handleSubmit} disabled={!selectedFilters.years.length || !selectedCommodities.length}>
+      <button className="submit-button" onClick={handleSubmit}>
         Apply Filters
       </button>
     </div>
