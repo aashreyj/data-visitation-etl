@@ -9,9 +9,43 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcEleme
 const ChartComponent = ({ chartData, chartType, title }) => {
   return (
     <div className="chart-component">
-      <h3 style={{ textAlign: 'center', marginBottom: '10px' }}>{title}</h3>
-      {chartType === 'line' && <Line data={chartData} />}
-      {chartType === 'pie' && <Pie data={chartData} />}
+      <h3 style={{ textAlign: 'center', marginBottom: '40px' }}>{title}</h3>
+      <div>
+        {chartType === 'line' && (
+          <Line
+            data={chartData}
+            options={{
+              scales: {
+                y: {
+                  suggestedMin: 0,
+                  suggestedMax: 10,
+                  ticks: {
+                    stepSize: 0.5,
+                    
+                  }
+                }
+              }
+            }}
+          />)}
+        {chartType === 'pie' && (
+          <Pie
+            data={chartData}
+            height={"300px"}
+            options={{
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "right",
+                  labels: {
+                    padding: 25,
+                  },
+                },
+              }
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 };

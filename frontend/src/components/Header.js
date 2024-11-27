@@ -10,7 +10,7 @@ const Header = () => {
           <img src={logo} alt="EXIM Logo" />
         </Link>
       </div>
-      <h1>Indian EXIM Data Visualization Portal</h1>
+      <h1>EximScope Data Visualization Portal</h1>
     </header>
   );
 };

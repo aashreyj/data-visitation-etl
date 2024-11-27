@@ -16,18 +16,18 @@ const CommoditiesPage = () => {
     setSelectedCategory(category);
     setSelectedCommodity(''); // Reset commodity selection when category changes
   };
-  
+
   <br>
   </br>
   // Handle selection of a specific commodity
   const handleCommodityClick = (commodity) => {
     setSelectedCommodity(commodity);
     // Navigate to the visualization page with the selected category and commodity
-    navigate('/data-visualization/', { 
-      state: { 
-        selectedCommodity: commodity, 
-        selectedCategory 
-      } 
+    navigate('/data-visualization/', {
+      state: {
+        selectedCommodity: commodity,
+        selectedCategory
+      }
     });
   };
 
@@ -36,17 +36,17 @@ const CommoditiesPage = () => {
       <h2 style={{ textAlign: 'center', fontSize: '2rem', marginBottom: '30px' }}>
         Select Your Interest
       </h2>
-      
+
       {/* Category Selection */}
       <div className="category-selection">
-        <button 
-          onClick={() => handleCategorySelect('Imports')} 
+        <button
+          onClick={() => handleCategorySelect('Imports')}
           className={`category-button ${selectedCategory === 'Imports' ? 'selected' : ''}`}
         >
           Imports
         </button>
-        <button 
-          onClick={() => handleCategorySelect('Exports')} 
+        <button
+          onClick={() => handleCategorySelect('Exports')}
           className={`category-button ${selectedCategory === 'Exports' ? 'selected' : ''}`}
         >
           Exports
@@ -61,7 +61,7 @@ const CommoditiesPage = () => {
           </h3>
           <div className="category-grid">
             {[
-              'Agricultural and Food Products',
+              'Agriculture and Food Products',
               'Minerals, Metals, and Related Products',
               'Chemical and Industrial Products',
               'Textiles, Leather, and Fashion',
@@ -69,7 +69,7 @@ const CommoditiesPage = () => {
               'Machinery, Vehicles, and Transport Equipment',
               'Medical, Scientific, and Optical Instruments',
               'Defense and Security Products',
-              'Miscellaneous Manufactured Goods and Collectibles',
+              'Manufactured Goods and Collectibles',
             ].map((commodity) => (
               <div
                 key={commodity}
