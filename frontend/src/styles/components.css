@@ -28,7 +28,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 150px;
+    height: 120px;
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
@@ -101,7 +101,7 @@ body {
 }
 
 .sidebar li {
-    padding: 15px 0;
+    padding: 2px 0;
     font-weight: bold;
     text-align: center;
 }
@@ -427,7 +427,7 @@ body {
     width: 100%;
     flex-wrap: wrap; /* Ensures responsiveness */
     gap: 30px; /* Space between the charts */
-    margin-bottom: 100px; /* Added space between charts and commodities section */
+    margin-bottom: 50px; /* Added space between charts and commodities section */
   }
   
   /* Style for individual chart containers */
@@ -881,7 +881,7 @@ html, body {
   justify-content: center; /* Center content horizontally */
   align-items: center; /* Center content vertically */
 }
-[29/11/24, 9:49:21 PM] IH MT SSD Kanika Arpan: .about-us {
+.about-us {
   font-family: Arial, sans-serif;
   padding: 20px;
   background-color: #f9f9f9;
@@ -976,7 +976,7 @@ html, body {
 .member p {
   margin: 5px 0;
 }
-[29/11/24, 9:50:38 PM] IH MT SSD Kanika Arpan: .main-body {
+.main-body {
   background-color: #ffffff;
   padding: 30px;
   border-radius: 8px;
