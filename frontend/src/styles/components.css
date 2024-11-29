@@ -139,6 +139,15 @@ body {
     margin-bottom: 20px;
 }
 
+.filter-group {
+  border: 2px groove lightgray;
+  margin-top: 10px;
+  padding-top: 5px;
+  padding-left: 10px;
+  border-radius: 15px;
+  width: 830px;
+}
+
 .filter-section h3 {
     margin-bottom: 15px;
     font-size: 22px; /* Increased font size */
@@ -178,6 +187,7 @@ body {
     background-color: #f4f4f4;
     overflow-y: auto;
     font-size: 18px; /* Increased font size */
+    border-radius: 10px;
 }
 
 .commodity-selection-body {
@@ -426,7 +436,7 @@ body {
     width: 100%;
     flex-wrap: wrap; /* Ensures responsiveness */
     gap: 30px; /* Space between the charts */
-    margin-bottom: 100px; /* Added space between charts and commodities section */
+    margin-bottom: 20px; /* Added space between charts and commodities section */
   }
   
   /* Style for individual chart containers */

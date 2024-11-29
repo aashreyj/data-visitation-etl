@@ -1,5 +1,6 @@
+import querystring from 'querystring';
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import ErrorBoundary from "./ErrorBoundary";
 import { Line, Pie } from "react-chartjs-2";
 import { dataAPI } from "../utils/api";
@@ -26,36 +27,120 @@ ChartJS.register(
   PointElement
 );
 
-const DashboardCustom = ({ selectedFilters, selectedCommodities }) => {
+const DashboardCustom = () => {
   const navigate = useNavigate();
-  const [data, setData] = useState(null);
+  const location = useLocation();
+  const [lineData, setLineData] = useState({});
+  const [pieData, setPieData] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchCustomData = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const response = await dataAPI.fetchVisualizations(
-          selectedFilters,
-          selectedCommodities
-        );
-        if (response.data) {
-          setData(response.data);
-        } else {
-          throw new Error("No data received from server");
-        }
-      } catch (err) {
-        setError(err.message || "Failed to fetch data");
-        console.error("Error fetching data:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const apiCategory = location.state?.commodity || "agriculture";
+  const apiIeType = location.state?.category || "import";
+  const quantityOrValue = location.state?.quantityOrValue || "value";
+  const commodityOrGeography = location.state?.commodityOrGeography || "commodity";
+  const selectedFilters = location.state.filters;
+  const pieBackgroundColours = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#FF9F40', '#9400D3', '#4BA3C7', '#FF6F61', '#FFC154'];
 
+  let unit = "";
+  if (quantityOrValue === "quantity")
+    unit = " (in Tonnes) ";
+  else
+    unit = " (in Mil. USD) ";
+
+  let displayWord = "";
+  if (commodityOrGeography === "commodity")
+    displayWord = selectedFilters.regions[0];
+  else
+    displayWord = selectedFilters.commodities[0];
+  
+  // FUNCTION TO CONVERT A WORD TO TITLE CASE
+  function toTitleCase(word) {
+    if (!word) return '';
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  }
+
+  const fetchCustomData = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      // MAKE API REQUEST
+      const API_BASE_URL = `http://localhost:5000/data/${apiCategory}/${String(apiIeType).toLowerCase()}/`;
+      const queryString = querystring.stringify(selectedFilters);
+      const urlYear = API_BASE_URL + "year?" + queryString;
+      const urlGeography = API_BASE_URL + "geography?" + queryString;
+
+      const yearResponse = await fetch(urlYear);
+      const geographyResponse = await fetch(urlGeography);
+
+      const yearResponseJson = await yearResponse.json();
+      const geographyResponseJson = await geographyResponse.json();
+
+      if (!yearResponse.ok || !geographyResponse.ok) {
+        throw new Error(yearResponseJson.message);
+      }
+
+      // CREATE LINE CHART DATASET
+      const lineChartData = {};
+      lineChartData.labels = [];
+      for (let year of yearResponseJson.data.labels)
+        lineChartData.labels.push(year.split("_")[0]);
+
+      lineChartData.datasets = [];
+
+      // dataset is either commodity or geography
+      if (commodityOrGeography === "commodity") {
+        for (let commodityIndex in yearResponseJson.data.commodity_data) {
+          const dataObject = {
+            label: yearResponseJson.data.commodity_data[commodityIndex].name,
+            fill: false,
+            tension: 0.1,
+            borderColor: `hsl(${commodityIndex * 137.5}, 70%, 50%)`,
+            data: yearResponseJson.data.commodity_data[commodityIndex][quantityOrValue]
+          };
+          lineChartData.datasets.push(dataObject);
+        }
+      }
+      else {
+      }
+      setLineData(lineChartData);
+
+      // CREATE PIE CHART DATASET
+      const pieChartData = {};
+      pieChartData.labels = [];
+      pieChartData.datasets = [{
+        data: [],
+        backgroundColor: []
+      }];
+
+      if (commodityOrGeography === "commodity") {
+        for (let commodityIndex in yearResponseJson.data.commodity_data) {
+          pieChartData.labels.push(yearResponseJson.data.commodity_data[commodityIndex].name);
+          pieChartData.datasets[0].backgroundColor.push(pieBackgroundColours[commodityIndex]);
+          let sum = 0;
+          for (let value of yearResponseJson.data.commodity_data[commodityIndex][quantityOrValue])
+            sum += Number(value);
+          pieChartData.datasets[0].data.push(Number(sum / yearResponseJson.data.labels.length))
+        }
+      }
+      else {
+
+      }
+      setPieData(pieChartData);
+
+    }
+    catch (err) {
+      setError(err.message || "Failed to fetch data");
+      console.error("Error fetching data:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+
+  useEffect(() => {
     fetchCustomData();
-  }, [selectedFilters, selectedCommodities]);
+  }, []);
 
   const handleDownload = async () => {
     try {
@@ -95,33 +180,6 @@ const DashboardCustom = ({ selectedFilters, selectedCommodities }) => {
     return <div>Error: {error}</div>;
   }
 
-  const chartData = {
-    labels: data?.data?.labels || [],
-    datasets:
-      data?.data?.commodity_data?.map((commodity, index) => ({
-        label: commodity.name,
-        data: commodity.value,
-        borderColor: `hsl(${index * 137.5}, 70%, 50%)`,
-        tension: 0.1,
-        fill: false,
-      })) || [],
-  };
-
-  const pieChartData = {
-    labels: data?.data?.commodity_data?.map((c) => c.name) || [],
-    datasets: [
-      {
-        data:
-          data?.data?.commodity_data?.map((c) => c.value[c.value.length - 1]) ||
-          [],
-        backgroundColor:
-          data?.data?.commodity_data?.map(
-            (_, index) => `hsl(${index * 137.5}, 70%, 50%)`
-          ) || [],
-      },
-    ],
-  };
-
   return (
     <ErrorBoundary>
       <div className="dashboard-custom">
@@ -137,7 +195,7 @@ const DashboardCustom = ({ selectedFilters, selectedCommodities }) => {
             justifyContent: "space-around",
           }}
         >
-          {data?.data?.commodity_data && (
+          {(
             <div
               className="chart-container"
               style={{
@@ -146,21 +204,35 @@ const DashboardCustom = ({ selectedFilters, selectedCommodities }) => {
                 marginBottom: "20px",
               }}
             >
-              <h3>Line Chart</h3>
-              <Line data={chartData} />
+              <h3 style={{marginBottom: "50px"}}>{`${toTitleCase(apiIeType)} ${toTitleCase(quantityOrValue)} ${unit} over selected years for ${displayWord}`}</h3>
+              <Line data={lineData} />
             </div>
           )}
-          {data?.data?.commodity_data && (
+          {(
             <div
               className="chart-container"
               style={{
                 flex: "1 1 45%",
                 minWidth: "300px",
-                marginBottom: "20px",
+                marginBottom: "20px"
               }}
             >
-              <h3>Pie Chart</h3>
-              <Pie data={pieChartData} />
+              <h3 style={{marginBottom: "20px"}}>{`Distribution of Average ${toTitleCase(apiIeType)} ${toTitleCase(quantityOrValue)} ${unit} for ${displayWord}`}</h3>
+              <Pie
+                data={pieData}
+                height={"300px"}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      position: "right",
+                      labels: {
+                        padding: 25,
+                      },
+                    },
+                  }
+                }} />
             </div>
           )}
         </div>
@@ -171,7 +243,7 @@ const DashboardCustom = ({ selectedFilters, selectedCommodities }) => {
           style={{ textAlign: "center", marginTop: "20px" }}
         >
           <button
-            onClick={() => navigate("/data-filter")}
+            onClick={() => navigate("/data-filter", { state: { category: apiIeType, commodity: apiCategory } })}
             style={{
               padding: "10px 20px",
               marginRight: "10px",
@@ -196,7 +268,7 @@ const DashboardCustom = ({ selectedFilters, selectedCommodities }) => {
               cursor: "pointer",
             }}
           >
-            Download Data
+            Download JSON
           </button>
         </div>
       </div>

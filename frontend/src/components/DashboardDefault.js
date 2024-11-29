@@ -124,9 +124,9 @@ const DashboardDefault = () => {
             <ChartComponent chartData={pieChartData} chartType="pie" title="Regional Distribution by Quantity (in tonnes)" />
           </div>
         </div>
-        <div className="dashboard-actions" style={{ textAlign: 'center', marginTop: '40px' }}>
+        <div className="dashboard-actions" style={{ textAlign: 'center', marginTop: '10px' }}>
           <button
-            onClick={() => navigate('/data-filter')}
+            onClick={() => navigate('/data-filter', { state: { category: apiIeType, commodity: apiCategory } })}
             className="custom-visualisation-button"
           >
             Custom Visualisation
