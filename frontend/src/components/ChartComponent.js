@@ -9,20 +9,17 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcEleme
 const ChartComponent = ({ chartData, chartType, title }) => {
   return (
     <div className="chart-component">
-      <h3 style={{ textAlign: 'center', marginBottom: '40px' }}>{title}</h3>
+      <h3 style={{ textAlign: 'center'}}>{title}</h3>
       <div>
         {chartType === 'line' && (
           <Line
             data={chartData}
             options={{
+              responsive: true,
               scales: {
                 y: {
                   suggestedMin: 0,
-                  suggestedMax: 10,
-                  ticks: {
-                    stepSize: 0.5,
-                    
-                  }
+                  suggestedMax: 20,
                 }
               }
             }}
