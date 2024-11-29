@@ -9,7 +9,10 @@ import DashboardDefault from './components/DashboardDefault';
 import DataFilter from './components/DataFilter';
 import DashboardCustom from './components/DashboardCustom';
 import DataDisplay from './components/DataDisplay';
-import LoginRegister from './components/LoginRegister';
+import AboutUs from './components/AboutUs';
+import Login from './components/Login';
+import Register from './components/Register';
+import LandingPage from './components/LandingPage';
 import './styles/global.css'; // Ensure this file exists and includes relevant styles
 
 const App = () => {
@@ -30,7 +33,7 @@ const App = () => {
           <div className="body" style={{ flex: 1, padding: '20px' }}>
             <Routes>
               {/* Home Route */}
-              <Route path="/" element={<div>Welcome to Home Page</div>} />
+              <Route path="/" element={<LandingPage />} />
 
               {/* Commodities Route */}
               <Route path="/commodities-category" element={<CommoditiesPage />} />
@@ -42,10 +45,11 @@ const App = () => {
               <Route path="/data-visualization/data" element={<DataDisplay />} />
 
               {/* Login/Register Route */}
-              <Route path="/login" element={<LoginRegister />} />
+              <Route path="/login" element={<Login/>} />
+              <Route path="/register" element={<Register/>} />
 
               {/* About Us Route */}
-              <Route path="/about-us" element={<div>About Us Page</div>} />
+              <Route path="/about-us" element={<AboutUs />} />
             </Routes>
           </div>
         </div>
