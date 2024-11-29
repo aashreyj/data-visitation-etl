@@ -32,20 +32,18 @@ router.get('/:category/:ieType/:ygType', async (req, res) => {
     let years = req.query.years;
     if (!years)
         years = allYears;
-    else
-        years = years.split(",");
 
-    let geographies = req.query.geographies;
-    if (!geographies)
+    let geographies = req.query.regions;
+    if(!geographies)
         geographies = allGeographies;
-    else
-        geographies = geographies.split(",");
+    if(!Array.isArray(geographies))
+        geographies = Array(geographies);
 
     let commodities = req.query.commodities;
     if (!commodities)
         commodities = allCommodities;
-    else
-        commodities = commodities.split(",");
+    if(!Array.isArray(commodities))
+        commodities = Array(commodities);
 
     // EXTRACT ALL PATH PARAMS
     const category = req.params.category.toLowerCase();
