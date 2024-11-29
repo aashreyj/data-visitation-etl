@@ -1,8 +1,8 @@
 import React from "react";
 import "../styles/components.css"; // Import the component.css file which includes styles
 
-import groupImage from "../Assets/d.jpeg";
-import chiefAdvisorImage from "../Assets/s.jpg";
+import groupImage from "../Assets/d.png";
+import chiefAdvisorImage from "../Assets/s.png";
 import { Colors } from "chart.js";
 
 
