@@ -14,16 +14,18 @@ dotenv.config({ path: './conf.env' });
 const port = process.env.APPLICATION_PORT || 5000;
 const sessionSecret = process.env.SECRET;
 const corsOptions = {
-    origin: "*",
+    origin: "http://localhost:3000",
     credentials: true,
-    optinoSuccessState: 200,
+    optionsSuccessState: 200,
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
 }
 
 function isAuthenticated(req, res, next) {
     const unauthRoutes = ["/user/register", "/user/login"]
-    if(unauthRoutes.includes(req.path) || req.isAuthenticated())
+    if (unauthRoutes.includes(req.path) || req.isAuthenticated())
         return next();
-    return res.status(HTTP_STATUS_UNAUTHORISED).json({message: "User is not logged in", status: HTTP_STATUS_UNAUTHORISED});
+    return res.status(HTTP_STATUS_UNAUTHORISED).json({ message: "User is not logged in", status: HTTP_STATUS_UNAUTHORISED });
 }
 
 // MIDDLEWARE

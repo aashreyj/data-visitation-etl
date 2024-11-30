@@ -1,0 +1,270 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* Global body styling */
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+  }
+  
+  /* Basic layout styling for the entire app */
+  .App {
+    display: flex;
+    flex-direction: column;
+    min-height: 300vh;
+  }
+  
+  /* Header Styles */
+  .header {
+    background-color: white; /* Header background set to white */
+    color: black;
+    padding: 50px 50px; /* Increased padding for logo spacing */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 650px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for separation */
+  }
+  
+  .header .header-logo img {
+    height: 100px;  /* Set logo size */
+    width: auto;
+  }
+  
+  .header h1 {
+    margin: 0;
+    font-size: 44px;
+    text-align: center;
+    flex-grow: 5;
+  }
+  
+  /* Navbar Styles */
+  .navbar {
+    background-color: #1c446c; /* Updated to purple */
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  
+  .navbar-justify-center {
+    display: flex;
+    justify-content: center;  /* Center the links horizontally */
+    flex-grow: 5;  /* Ensures the center div takes up remaining space */
+    gap: 70px;  /* Space between the links */
+  }
+
+  
+  .navbar-links {
+    display: flex;
+    justify-content: flex-end;
+    gap: 30px;
+  }
+  
+  .navbar-item {
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    padding: 10px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .navbar-item:hover {
+    background-color: #303f9f; /* Lighter blue on hover */
+    border-radius: 5px;
+  }
+  
+  /* Sidebar Styles */
+  .sidebar {
+    background-color: #f4f4f4;
+    width: 250px;
+    padding: 20px;
+    flex-shrink: 0;
+    border-right: 2px solid #ddd;
+  }
+  
+  .sidebar .section {
+    margin-bottom: 50px;
+  }
+  
+  .sidebar .section-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    padding: 10px;
+    text-align: center;
+    color: white;
+    border-radius: 5px;
+    text-transform: uppercase;
+  }
+  
+  .sidebar .export {
+    background-color: #3f51b5;
+    cursor: pointer;
+  }
+  
+  .sidebar .export:hover {
+    background-color: #303f9f;
+  }
+  
+  .sidebar .import {
+    background-color: #d32f2f;
+    cursor: pointer;
+  }
+  
+  .sidebar .import:hover {
+    background-color: #c62828;
+  }
+  
+  .sidebar ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .sidebar li {
+    padding: 10px 0;
+    font-weight: bold;
+    text-align: center;
+  }
+  
+  .sidebar-item {
+    display: block;
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    padding: 10px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .sidebar-item:hover {
+    background-color: #ddd;
+    border-radius: 5px;
+  }
+  
+  /* Body Section Styles */
+  .body {
+    padding: 20px;
+    flex-grow: 1;
+  }
+  
+  .data-display {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .dashboard {
+    padding: 20px;
+  }
+  
+  /* Footer Styles */
+  .footer {
+    background-color: #3f51b5;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+  }
+  
+  /* Layout for main sections (Header, Sidebar, Content) */
+  .main-layout {
+    display: flex;
+    flex-grow: 1;
+    overflow: hidden;
+  }
+  
+  .content {
+    flex-grow: 1;
+    padding: 20px;
+    background-color: #fff;
+    overflow-y: auto;
+  }
+  
+  .chart-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+  }
+  
+  /* Grid layout for the commodities sections */
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+  }
+  
+  .category-item {
+    background-color: #e1e1e1;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+  }
+  
+  .category-item:hover {
+    transform: scale(1.05);
+    background-color: #ddd;
+  }
+  
+  .commodity-section {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Add responsiveness */
+  @media (max-width: 768px) {
+    .main-layout {
+      flex-direction: column;
+    }
+  
+    .sidebar {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+  
+    .navbar {
+      flex-direction: column;
+      padding: 15px 0;
+    }
+  
+    .navbar-links {
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+    }
+  
+    .content {
+      padding: 15px;
+    }
+  
+    .category-grid {
+      grid-template-columns: repeat(1, 1fr);
+    }
+    
+    .header h1 {
+      font-size: 20px;
+      text-align: center;
+      margin-top: 20px;
+    }
+  }
+

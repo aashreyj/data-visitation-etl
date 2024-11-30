@@ -25,7 +25,7 @@ function toTitleCase(word) {
     return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
 }
 
-// ENDPOINT TO RETRIVE DATA BASED ON THE FILTERS APPLIED IN THE JSON REQUEST BODY
+// ENDPOINT TO RETRIVE DATA BASED ON THE FILTERS APPLIED IN THE QUERY
 router.get('/:category/:ieType/:ygType', async (req, res) => {
 
     // EXTRACT ALL QUERY PARAMS or SET DEFAULT VALUES
@@ -34,15 +34,15 @@ router.get('/:category/:ieType/:ygType', async (req, res) => {
         years = allYears;
 
     let geographies = req.query.regions;
-    if(!geographies)
+    if (!geographies)
         geographies = allGeographies;
-    if(!Array.isArray(geographies))
+    if (!Array.isArray(geographies))
         geographies = Array(geographies);
 
     let commodities = req.query.commodities;
     if (!commodities)
         commodities = allCommodities;
-    if(!Array.isArray(commodities))
+    if (!Array.isArray(commodities))
         commodities = Array(commodities);
 
     // EXTRACT ALL PATH PARAMS
@@ -144,6 +144,110 @@ router.get('/:category/:ieType/:ygType', async (req, res) => {
         });
         data.commodity_data.push(dataset);
     }
+
+    // CLOSE CONNECTION AND RETURN RESPONSE
+    connection.end();
+    console.log(`Response data: ${JSON.stringify(data)}`);
+    return res
+        .status(HTTP_STATUS_OK)
+        .json({ message: "Success", status: HTTP_STATUS_OK, data: data });
+})
+
+// ENDPOINT TO RETRIVE DATA BASED ON THE FILTERS APPLIED IN THE QUERY
+router.get('/plot/:category/:ieType/commodity', async (req, res) => {
+
+    // EXTRACT ALL QUERY PARAMS or SET DEFAULT VALUES
+    let years = req.query.years;
+    if (!years)
+        years = allYears;
+
+    let geographies = req.query.regions;
+    if (!geographies)
+        geographies = allGeographies;
+    if (!Array.isArray(geographies))
+        geographies = Array(geographies);
+
+    let commodity = req.query.commodities;
+
+    // EXTRACT ALL PATH PARAMS
+    const category = req.params.category.toLowerCase();
+    const importOrExport = req.params.ieType.toLowerCase();
+
+    // VALIDATIONS
+    if (!allCategories.includes(category)) {
+        console.error("Invalid category selected");
+        return res
+            .status(HTTP_STATUS_BAD_REQUEST)
+            .json({ message: "Invalid category selected", status: HTTP_STATUS_BAD_REQUEST, data: {} });
+    }
+    if (importOrExport != "import" && importOrExport != "export") {
+        console.error(`Invalid data type: ${importOrExport}`);
+        return res
+            .status(HTTP_STATUS_BAD_REQUEST)
+            .json({ message: "Invalid data type", status: HTTP_STATUS_BAD_REQUEST, data: {} });
+    }
+
+    // CREATE CONNECTION TO DATABASE
+    dbConfig.database = importOrExport + "_data_" + category;
+    const connection = mysql.createConnection(dbConfig);
+
+    try {
+        connection.connect();
+        console.log(`\nSuccessfully connected to local MySQL Server: ${dbConfig.database} database`);
+    }
+    catch (err) {
+        console.error(err.message);
+        return res
+            .status(HTTP_STATUS_SERVER_ERROR)
+            .json({ message: "Internal error occurred", status: HTTP_STATUS_SERVER_ERROR, data: {} });
+    }
+
+    // DATA AGGREGATION
+    const data = {};
+    data.commodity_data = {};
+    data.labels = [...years].sort();
+    for (let geo of geographies) {
+        data.commodity_data[geo] = {
+            value: [],
+            quantity: []
+        };
+        let dataset = {};
+        dataset.name = geo;
+        dataset.value = [];
+        dataset.quantity = [];
+    }
+
+    const yearsString = JSON.stringify(years).replace('[', '(').replace(']', ')');
+    const geographiesString = JSON.stringify(geographies).replace('[', '(').replace(']', ')');
+
+    let query = "WITH Years AS (SELECT '2014_15' AS Year UNION ALL SELECT '2015_16' UNION ALL SELECT '2016_17' UNION ALL SELECT '2017_18' UNION ALL SELECT '2018_19'";
+    query += " UNION ALL SELECT '2019_20' UNION ALL SELECT '2021_22' UNION ALL SELECT '2022_23'), Continents AS (SELECT 'Africa' AS Continent UNION ALL SELECT 'Asia'";
+    query += "UNION ALL SELECT 'Europe' UNION ALL SELECT 'North America' UNION ALL SELECT 'Oceania' UNION ALL SELECT 'South America') SELECT y.Year, c.Continent,";
+    query += " COALESCE(SUM(d.Value), 0) AS VAL, COALESCE(SUM(d.Quantity), 0) AS QUAN FROM Years y CROSS JOIN Continents c LEFT JOIN ";
+    query += importOrExport + "_data_" + commodity.toLowerCase() + " d ON y.Year = d.Year AND c.Continent = d.Continent WHERE (d.Year IN " + yearsString;
+    query += " OR d.Year IS NULL) AND (d.Continent IN " + geographiesString + " OR d.Continent IS NULL) GROUP BY c.Continent, y.Year ORDER BY c.Continent, y.Year;";
+
+
+    // RUN THE SQL QUERY ASYNCHRONOUSLY AND WAIT FOR RESPONSE
+    await new Promise((resolve) => {
+        connection.query(query, function (err, queryResult) {
+            if (err) {
+                console.error(err.message);
+                return res
+                    .status(HTTP_STATUS_SERVER_ERROR)
+                    .json({ message: "MySQL error occurred", status: HTTP_STATUS_SERVER_ERROR, data: {} });
+            }
+
+            // COLLECT DATA IN THE OBJECT
+            queryResult.forEach(row => {
+                if (data.labels.includes(row.Year) || data.labels.includes(row.Continent)) {
+                    data.commodity_data[row.Continent].value.push(row.VAL);
+                    data.commodity_data[row.Continent].quantity.push(row.VAL);
+                }
+            });
+            resolve();
+        });
+    });
 
     // CLOSE CONNECTION AND RETURN RESPONSE
     connection.end();
