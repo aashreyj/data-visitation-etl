@@ -9,7 +9,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcEleme
 const ChartComponent = ({ chartData, chartType, title }) => {
   return (
     <div className="chart-component">
-      <h3 style={{ textAlign: 'center'}}>{title}</h3>
+      <h3 style={{ textAlign: 'center' }}>{title}</h3>
       <div>
         {chartType === 'line' && (
           <Line
@@ -32,6 +32,28 @@ const ChartComponent = ({ chartData, chartType, title }) => {
               responsive: true,
               maintainAspectRatio: false,
               plugins: {
+                tooltip: {
+                  callbacks: {
+                    label: (tooltipItem) => {
+                      const dataset = tooltipItem.dataset;
+                      const total = dataset.data.reduce((acc, value) => acc + value, 0);
+                      const value = dataset.data[tooltipItem.dataIndex];
+                      const percentage = ((value / total) * 100).toFixed(2);
+                      return `${tooltipItem.label}: ${percentage}%`;
+                    },
+                  },
+                },
+                datalabels: {
+                  formatter: (value, context) => {
+                    const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
+                    const percentage = ((value / total) * 100).toFixed(2);
+                    return `${percentage}%`;
+                  },
+                  color: '#fff',
+                  font: {
+                    weight: 'bold',
+                  },
+                },
                 legend: {
                   position: "right",
                   labels: {

@@ -53,7 +53,7 @@ const DashboardCustom = () => {
     displayWord = selectedFilters.regions[0];
   else
     displayWord = selectedFilters.commodities[0];
-  
+
   // FUNCTION TO CONVERT A WORD TO TITLE CASE
   function toTitleCase(word) {
     if (!word) return '';
@@ -69,14 +69,22 @@ const DashboardCustom = () => {
       const queryString = querystring.stringify(selectedFilters);
       const urlYear = API_BASE_URL + "year?" + queryString;
       const urlGeography = API_BASE_URL + "geography?" + queryString;
+      const urlCommodity = `http://localhost:5000/data/plot/${apiCategory}/${String(apiIeType)}/commodity?${queryString}`;
 
       const yearResponse = await fetch(urlYear);
       const geographyResponse = await fetch(urlGeography);
+      let commodityResponse = "";
+      let commodityResponseJson = "";
 
+      if(commodityOrGeography === "geography") {
+        commodityResponse = await fetch(urlCommodity);
+        commodityResponseJson = await commodityResponse.json();
+      }
+      
       const yearResponseJson = await yearResponse.json();
       const geographyResponseJson = await geographyResponse.json();
 
-      if (!yearResponse.ok || !geographyResponse.ok) {
+      if (!yearResponse.ok || !geographyResponse.ok || (commodityOrGeography === "geographyy" && !commodityResponse.ok)) {
         throw new Error(yearResponseJson.message);
       }
 
@@ -102,6 +110,18 @@ const DashboardCustom = () => {
         }
       }
       else {
+        let index = 0;
+        for(let geography in commodityResponseJson.data.commodity_data) {
+          const dataObject = {
+            label: geography,
+            fill: false,
+            tension: 0.1,
+            borderColor: `hsl(${index * 137.5}, 70%, 50%)`,
+            data: commodityResponseJson.data.commodity_data[geography][quantityOrValue],
+          };
+          lineChartData.datasets.push(dataObject);
+          index++;
+        }
       }
       setLineData(lineChartData);
 
@@ -124,7 +144,11 @@ const DashboardCustom = () => {
         }
       }
       else {
-
+        for (let geoIndex in geographyResponseJson.data.labels) {
+          pieChartData.labels.push(geographyResponseJson.data.labels[geoIndex]);
+          pieChartData.datasets[0].backgroundColor.push(pieBackgroundColours[geoIndex]);
+          pieChartData.datasets[0].data.push(Number(geographyResponseJson.data.commodity_data[0][quantityOrValue][geoIndex] / selectedFilters.years.length));
+        }
       }
       setPieData(pieChartData);
 
@@ -204,7 +228,7 @@ const DashboardCustom = () => {
                 marginBottom: "20px",
               }}
             >
-              <h3 style={{marginBottom: "50px"}}>{`${toTitleCase(apiIeType)} ${toTitleCase(quantityOrValue)} ${unit} over selected years for ${displayWord}`}</h3>
+              <h3 style={{ marginBottom: "50px" }}>{`${toTitleCase(apiIeType)} ${toTitleCase(quantityOrValue)} ${unit} over selected years for ${displayWord}`}</h3>
               <Line data={lineData} />
             </div>
           )}
@@ -217,7 +241,7 @@ const DashboardCustom = () => {
                 marginBottom: "20px"
               }}
             >
-              <h3 style={{marginBottom: "20px"}}>{`Distribution of Average ${toTitleCase(apiIeType)} ${toTitleCase(quantityOrValue)} ${unit} for ${displayWord}`}</h3>
+              <h3 style={{ marginBottom: "20px" }}>{`Distribution of ${toTitleCase(apiIeType)} ${toTitleCase(quantityOrValue)} ${unit} for ${displayWord}`}</h3>
               <Pie
                 data={pieData}
                 height={"300px"}

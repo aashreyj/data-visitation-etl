@@ -29,9 +29,6 @@ const DataFilter = () => {
 
   const handleFilterChange = (key, value, isCheckbox = false) => {
     setSelectedFilters((prev) => {
-      if (value === `All ${key.charAt(0).toUpperCase() + key.slice(1)}`) {
-        return { ...prev, [key]: isCheckbox && !prev[key].includes(value) ? [value] : [] };
-      }
       return {
         ...prev,
         [key]: prev[key].includes(value)
@@ -111,7 +108,7 @@ const DataFilter = () => {
           <div className="filter-group">
             <h4>Time Periods</h4>
             <div className="checkbox-container">
-              {['2014', '2015', '2016', '2017', '2018', '2019', '2021', '2022', 'All Years'].map((year) => (
+              {['2014', '2015', '2016', '2017', '2018', '2019', '2021', '2022'].map((year) => (
                 <label key={year}>
                   <input
                     type="checkbox"
@@ -183,7 +180,7 @@ const DataFilter = () => {
           <div className="filter-group">
             <h4>Select Regions</h4>
             <div className="checkbox-container">
-              {['Africa', 'Asia', 'Europe', 'Oceania', 'North America', 'South America', 'All Regions'].map(
+              {['Africa', 'Asia', 'Europe', 'Oceania', 'North America', 'South America'].map(
                 (region) => (
                   <label key={region}>
                     <input
@@ -205,7 +202,7 @@ const DataFilter = () => {
         <div className="commodity-selection">
           <h3>Select Commodities</h3>
           <div className="checkbox-container">
-            {['Cashew', 'Coffee', 'Groundnut', 'Pulses', 'Sugar', 'Spices', 'Tea', 'Wheat', 'All Commodities'].map((commodity) => (
+            {['Cashew', 'Coffee', 'Groundnut', 'Pulses', 'Sugar', 'Spices', 'Tea', 'Wheat'].map((commodity) => (
               <label key={commodity}>
                 <input
                   type="checkbox"
