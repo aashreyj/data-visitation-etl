@@ -168,27 +168,12 @@ const DashboardCustom = () => {
 
   const handleDownload = async () => {
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/api/download`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            filters: selectedFilters,
-            commodities: selectedCommodities,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to download data");
-      }
-
-      const blob = await response.blob();
+      const newObject = {lineChart: lineData, pieChart: pieData};
+      const blob = new Blob([JSON.stringify(newObject, null, 4)], { type: 'application/json' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "custom-data.csv";
+      a.download = "custom-data.json";
       a.click();
     } catch (err) {
       console.error("Error downloading data:", err);
